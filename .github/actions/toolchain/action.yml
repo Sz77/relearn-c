@@ -1,0 +1,23 @@
+name: Toolchain
+description: Install gcc/clang, cppcheck and pre-commit, and allow ASan to run on GitHub runners
+runs:
+  using: composite
+  steps:
+    - name: Install packages
+      shell: bash
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq gcc clang cppcheck make
+    - name: Allow AddressSanitizer on runners (high mmap ASLR entropy breaks ASan)
+      shell: bash
+      run: sudo sysctl -w vm.mmap_rnd_bits=28
+    - uses: actions/setup-python@v6
+      with:
+        python-version: "3.13"
+    - name: Install pre-commit
+      shell: bash
+      run: python -m pip install --quiet pre-commit
+    - uses: actions/cache@v5
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}

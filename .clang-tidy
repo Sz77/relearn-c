@@ -1,0 +1,31 @@
+---
+# Checks chosen to teach safe, idiomatic C. Every warning is an error.
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-reserved-identifier,
+  cert-*,
+  -cert-dcl37-c,
+  -cert-dcl51-cpp,
+  -cert-err33-c,
+  clang-analyzer-*,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  misc-*,
+  -misc-include-cleaner,
+  -misc-unused-parameters,
+  readability-*,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-braces-around-statements,
+  -readability-function-cognitive-complexity,
+  -readability-isolate-declaration,
+  -readability-uppercase-literal-suffix,
+  -readability-avoid-unconditional-preprocessor-if,
+  -readability-math-missing-parentheses,
+  performance-*,
+  portability-*
+WarningsAsErrors: '*'
+HeaderFilterRegex: '^(?!.*third_party).*'
+FormatStyle: file
+...
