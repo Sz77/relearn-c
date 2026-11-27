@@ -86,7 +86,9 @@ the explanation "nothing to review yet".
   `🟡 in progress` and say in the review what is still missing (remaining exercises, or what
   would close the weak spots).
 
-Commit with `docs(progress): review topic NN round R — <VERDICT>` and push to the PR branch.
+Before committing, run `pre-commit run --files <the progress/roadmap files you changed>` and
+re-stage any files it fixed (for example a missing final newline). Then commit with
+`docs(progress): review topic NN round R — <VERDICT>` and push to the PR branch.
 
 ## Step 5: Publish
 
