@@ -16,3 +16,4 @@ One section per topic, newest review last. Maintained by the **review agent**.
 | 2026-11-27 | #5 | 1 | REDO | ex01 correct; ex02/ex03 are untouched starters (tests fail); `hello` binary and an examples edit were committed |
 | 2026-11-27 | #5 | 2 | REDO | ex01 APPROVE; ex02/ex03 not started; `hello` binary and the `examples/02-stages.c` edit are still in the PR |
 | 2026-11-27 | #5 | 3 | APPROVE | ex01 APPROVE; ex02/ex03 not started; artifact and examples edit removed, PR now touches only solutions/ and progress/ |
+| 2026-11-27 | #5 | 4 | APPROVE | re-run, no new solution changes: ex01 APPROVE (gcc and clang, lint clean); ex02/ex03 not started; PR touches only solutions/ and progress/ |
