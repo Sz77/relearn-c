@@ -35,6 +35,7 @@ file names. Also read the topic README, `progress/weak-spots.md` and `progress/s
   - one behavior per test function, with descriptive names and a failure message when it helps
   - for program tests: exact stdout, stderr when relevant, and exit codes
 - Fill in the "Exercises" table in the topic README.
+- Add one row per exercise to `progress/exercise-status.md` with status `⬜ not started`.
 
 ## Verification (mandatory)
 

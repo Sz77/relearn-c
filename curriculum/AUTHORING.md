@@ -78,7 +78,9 @@ topics/NN-kebab-name/
 - Flags: `-std=c17 -Wall -Wextra -Werror -pedantic -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes -g -O0`
 - Tests are built with `-fsanitize=address,undefined -fno-sanitize-recover=all`, with leak detection on.
   Any leak or UB fails the test.
-- `make test` runs only exercises that have a solution; the rest are SKIP. This keeps CI green on `main`.
+- `make test` runs only exercises that have a solution. Missing solutions and solutions
+  byte-identical to their starter are SKIP ("not started"). This keeps CI green on `main`
+  and on partial PRs. Reviews are per exercise; see `progress/exercise-status.md`.
 - `make starters` checks that every starter compiles against its test.
 - `make examples` compiles every example. If an example is meant to fail compilation, put
   `EXPECT_COMPILE_ERROR` in a comment on one of its first 3 lines.

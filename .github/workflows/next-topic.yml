@@ -39,9 +39,23 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Is a topic still in progress?
+        id: gate
+        env:
+          FORCE: ${{ inputs.force }}
+        run: |
+          if [ "$FORCE" != "true" ] && grep -q '🟡 in progress' curriculum/ROADMAP.md; then
+            echo "A topic is still in progress (not every exercise approved yet). Nothing to generate."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: ./.github/actions/toolchain
+        if: steps.gate.outputs.skip != 'true'
 
       - name: Curriculum + exercise agents
+        if: steps.gate.outputs.skip != 'true'
         id: claude
         uses: anthropics/claude-code-action@v1
         with:

@@ -33,23 +33,30 @@ installs the git hooks and runs a self-check. Run `make help` for every command.
 
 ## Your loop for each topic
 
+Reviews are **per exercise**: submit one exercise at a time (or several, or the whole topic).
+
 ```bash
 git switch main && git pull                   # get the newest topic
-# find the 🟡 topic in curriculum/ROADMAP.md, e.g. 01-hello-world
-git switch -c solve/01-hello-world
-make start T=01                               # copies starter files into topics/01-*/solutions/
+# find the 🟡 topic in curriculum/ROADMAP.md, e.g. 01-toolchain
+git switch -c solve/01-toolchain-ex01         # one branch per exercise (or per batch)
+make start T=01                               # copies starter files into topics/01-*/solutions/ (never overwrites)
 $EDITOR topics/01-*/README.md                 # learn the concept, then read exercises/*/README.md
-make test T=01                                # build + run tests (ASan + UBSan on)
+make test T=01                                # build + run tests (ASan + UBSan on); untouched starters are SKIPped
 git add -A && git commit -m "feat(topic-01): solve ex01"
 make submit                                   # push + open PR → review agent runs
 ```
 
-- **REDO**: the PR comment lists exact required fixes. The review bot also pushed a
-  progress commit to your branch, so run `git pull` first, then fix,
+- Only exercises you changed are reviewed. Untouched starter files count as "not started";
+  they never fail CI or the review.
+- **REDO**: the PR comment lists exact required fixes per exercise. The review bot also
+  pushed a progress commit to your branch, so run `git pull` first, then fix,
   `git commit -m "fix(topic-01): ..."` and `git push`. The review reruns on every push.
-- **APPROVE**: merge the PR (`gh pr merge --squash --delete-branch` or the button). This
-  triggers the next topic. It appears as an auto-merged PR a few minutes later, so
-  `git switch main && git pull` and continue.
+- **APPROVE**: merge the PR (`gh pr merge --squash --delete-branch` or the button), then
+  start the next exercise on a new branch from `main`.
+- When **every** exercise of the topic is approved, the topic is marked ✅ done, and merging
+  that PR generates the next topic (an auto-merged PR a few minutes later).
+
+Per-exercise status lives in `progress/exercise-status.md`.
 
 ## Rules enforced on every commit and PR
 
@@ -73,7 +80,7 @@ topics/NN-name/
   exercises/exMM-slug/       task description, header, starter file
   tests/                     Unity tests / program tests your solution must pass
   solutions/                 YOUR code (the only place you write)
-progress/                    common-problems, weak-spots, strengths, topic-log (kept by the review agent)
+progress/                    exercise-status, common-problems, weak-spots, strengths, topic-log (kept by the review agent)
 .claude/agents/              curriculum, exercise, review agent definitions
 .claude/commands/            /next-topic, /review-pr
 .github/workflows/           ci.yml, review.yml, next-topic.yml
