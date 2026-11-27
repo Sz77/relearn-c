@@ -48,8 +48,11 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_args: --permission-mode bypassPermissions
+          display_report: true
           prompt: |
             You are running in GitHub Actions for ${{ github.repository }} (GITHUB_ACTIONS=true).
             Follow `.claude/commands/next-topic.md` exactly, with $ARGUMENTS = "${{ inputs.force && 'force' || '' }}".
-            Use the `curriculum` and `exercise` subagents defined in `.claude/agents/`.
+            Do NOT use the Agent/Task tool or any subagent (in this headless run a background
+            subagent is abandoned when the session ends). Read `.claude/agents/curriculum.md`
+            and then `.claude/agents/exercise.md` and carry out both yourself, in this session.
             Never write solution code.

@@ -70,11 +70,14 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_args: --permission-mode bypassPermissions
+          display_report: true
           prompt: |
             You are running in GitHub Actions for ${{ github.repository }}.
             Follow `.claude/commands/review-pr.md` steps 1–3 for PR #${{ env.PR }}
             (the PR branch `${{ steps.pr.outputs.head_ref }}` is already checked out; skip `gh pr checkout`).
-            Use the `review` subagent defined in `.claude/agents/review.md`.
+            Do NOT use the Agent/Task tool or any subagent (in this headless run a background
+            subagent is abandoned when the session ends). Read `.claude/agents/review.md` and
+            carry out every step yourself, in this session, until the review comment is posted.
             When the verdict is known, write exactly `APPROVE` or `REDO` to the file
             ${{ runner.temp }}/verdict . Do not set commit statuses; the workflow does that.
             Never write solution code.
