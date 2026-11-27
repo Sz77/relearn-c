@@ -1,7 +1,7 @@
 /*
  * 02-stages.c: a tiny program to push through each stage of the toolchain
  * one at a time, so you can look at what each stage produces.
-
+ *
  * Run these from this directory and open each output file:
  *
  *   gcc -std=c17 -E 02-stages.c -o stages.i   # 1. preprocess only
