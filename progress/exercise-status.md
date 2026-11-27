@@ -10,6 +10,6 @@ Status: `⬜ not started` · `🔁 redo` · `✅ approved`
 
 | Topic | Exercise | Status | Last PR | Rounds | Updated |
 |-------|----------|--------|---------|--------|---------|
-| 01 | ex01-hello-streams | ⬜ not started | | 0 | |
+| 01 | ex01-hello-streams | ✅ approved | #5 | 2 | 2026-11-27 |
 | 01 | ex02-exitcode | ⬜ not started | | 0 | |
 | 01 | ex03-build-info | ⬜ not started | | 0 | |
