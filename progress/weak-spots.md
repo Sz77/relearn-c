@@ -24,4 +24,3 @@ _None._
 - **Topic:** 01
 - **Evidence:** `hello` (12 KB ELF binary) committed at the repo root in 37f0049; `topics/01-toolchain/examples/02-stages.c:4` lost its leading ` *` inside a block comment.
 - **What would close it:** a PR that touches only `solutions/` and progress files, with no binaries (check `git status` / `git diff --stat` before committing).
-
