@@ -1,4 +1,7 @@
-# Roadmap: zero to advanced C
+# Roadmap: zero to advanced C → Linux kernel and drivers
+
+End goal: **Linux kernel and device-driver development.** Parts 1–8 build solid user-space C;
+Part 9 bridges to kernel idioms; Parts 10–11 are kernel modules and real drivers (run in a VM).
 
 Small topics (about 1–2 h each), built in order. The **curriculum agent** creates the next
 `⬜ todo` row when the previous topic is `✅ done`. It may insert a review topic (🔁) when
@@ -62,3 +65,28 @@ Status: `⬜ todo` · `🟡 in progress` (folder created, exercises open) · `�
 | 50 | Sockets: TCP client and server, handling partial I/O | 44 | | ⬜ todo |
 | 51 | Event loops: `poll`, non-blocking I/O, a multi-client server | 50 | | ⬜ todo |
 | 52 | Capstone: a small key-value store server (hash table + sockets + persistence) | 32, 28, 51 | | ⬜ todo |
+| 53 | Intrusive data structures: `container_of`, `offsetof`, a `list_head`-style doubly linked list | 30, 39 | | ⬜ todo |
+| 54 | GNU C and kernel idioms: `typeof`, statement expressions, `__attribute__`, `likely`, `ERR_PTR`, negative errno returns | 40, 26 | | ⬜ todo |
+| 55 | Kernel coding style: `checkpatch.pl`, the kernel style guide, rewriting earlier code in kernel style | 54 | | ⬜ todo |
+| 56 | Virtual memory from user space: pages, `mmap`, page faults, `/proc/self/maps`, caches | 44 | | ⬜ todo |
+| 57 | Low-level concurrency: memory barriers, spinlocks vs mutexes, lock-free basics, the idea of RCU | 49 | | ⬜ todo |
+| 58 | Inline assembly and the ABI: calling conventions, `asm volatile`, reading compiler output | 39 | | ⬜ todo |
+| 59 | Kernel dev setup: build a kernel, boot it in QEMU with virtme-ng, `dmesg`, reading an oops | 55 | | ⬜ todo |
+| 60 | First kernel module: `module_init`/`module_exit`, `printk`, module parameters, Kbuild out-of-tree | 59 | | ⬜ todo |
+| 61 | Kernel memory: `kmalloc`/`kfree`, `vmalloc`, GFP flags, slab caches, `goto` error unwinding | 60 | | ⬜ todo |
+| 62 | Kernel data structures: `list_head`, `hlist`, rbtree, xarray | 61, 53 | | ⬜ todo |
+| 63 | Character device driver: `cdev`, `file_operations`, `copy_to_user`/`copy_from_user` | 61 | | ⬜ todo |
+| 64 | User interfaces: `ioctl` design, sysfs attributes, debugfs, procfs | 63 | | ⬜ todo |
+| 65 | Kernel concurrency: spinlocks, mutexes, atomics, wait queues, completions, lockdep | 63, 57 | | ⬜ todo |
+| 66 | Deferred work and time: timers, hrtimers, workqueues, kthreads, softirq/tasklet concepts | 65 | | ⬜ todo |
+| 67 | Blocking I/O and `poll`: sleeping readers, `poll`/`select` support in a driver | 66 | | ⬜ todo |
+| 68 | Memory mapping in drivers: implementing `mmap`, `remap_pfn_range`, page refcounts | 63, 56 | | ⬜ todo |
+| 69 | Kernel debugging: KASAN, UBSAN, kmemleak, lockdep, ftrace, kgdb in QEMU | 65 | | ⬜ todo |
+| 70 | Kernel testing: KUnit and kselftest | 62 | | ⬜ todo |
+| 71 | The device model: buses, devices, drivers, `probe`/`remove`, `devm_*` managed resources | 64 | | ⬜ todo |
+| 72 | Platform drivers and device tree (QEMU `virt` machine) | 71 | | ⬜ todo |
+| 73 | PCI drivers I: QEMU `edu` device, BARs, MMIO, `ioremap`, `readl`/`writel` | 71 | | ⬜ todo |
+| 74 | Interrupts: `request_irq`, threaded IRQs, top/bottom halves, MSI (edu device) | 73, 66 | | ⬜ todo |
+| 75 | DMA: coherent and streaming mappings, DMA with the edu device | 74 | | ⬜ todo |
+| 76 | Upstream workflow: `git format-patch`, commit messages, `get_maintainer.pl`, review etiquette | 55 | | ⬜ todo |
+| 77 | Kernel capstone: full PCI driver for the edu device (char interface, IRQ, DMA, sysfs, KUnit tests) | 75, 70, 64 | | ⬜ todo |

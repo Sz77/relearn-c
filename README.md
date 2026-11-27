@@ -1,6 +1,6 @@
 # relearn-c
 
-A self-running environment for relearning C from zero to advanced. **You write only the
+A self-running environment for relearning C from zero to advanced, ending in **Linux kernel and device-driver development** (kernel code runs in a QEMU VM, never on your host). **You write only the
 exercise solutions.** Agents generate topics, exercises and tests, review your code, track
 your progress and pick what comes next.
 

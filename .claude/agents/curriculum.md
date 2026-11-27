@@ -44,6 +44,9 @@ Read `curriculum/AUTHORING.md` first. It defines the exact layout and convention
   the strict flags. Use a sub-folder for multi-file examples. Examples teach the concept;
   they must **not** be near-solutions to the exercises.
 - Leave the "Exercises" table in README.md with placeholder rows. The exercise agent fills it in.
+- When creating the first kernel topic (roadmap topic 59), also build and verify the kernel
+  tooling described in AUTHORING.md under "Kernel topics", in the same change. Ask the
+  caller to run a full CI cycle on it before the exercise agent continues.
 - Set the roadmap row's `Folder` column to the folder name and `Status` to `🟡 in progress`.
 
 ## Step 3: Verify
