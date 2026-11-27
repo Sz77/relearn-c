@@ -1,0 +1,55 @@
+name: Next topic
+
+# When a solutions PR is merged (topic approved), generate the next topic:
+# curriculum agent + exercise agent → PR on topic/NN-name → auto-merge when CI is green.
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+    paths:
+      - "topics/*/solutions/**"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Create a topic even if one is still in progress
+        type: boolean
+        default: false
+
+concurrency:
+  group: next-topic
+  cancel-in-progress: false
+
+jobs:
+  next-topic:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      statuses: write
+      actions: write
+      id-token: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: ./.github/actions/toolchain
+
+      - name: Curriculum + exercise agents
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: --permission-mode bypassPermissions
+          prompt: |
+            You are running in GitHub Actions for ${{ github.repository }} (GITHUB_ACTIONS=true).
+            Follow `.claude/commands/next-topic.md` exactly, with $ARGUMENTS = "${{ inputs.force && 'force' || '' }}".
+            Use the `curriculum` and `exercise` subagents defined in `.claude/agents/`.
+            Never write solution code.

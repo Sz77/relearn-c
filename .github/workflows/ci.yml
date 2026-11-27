@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  # Bot-created PRs (next-topic / review workflows) dispatch CI explicitly,
+  # because pushes made with GITHUB_TOKEN do not trigger workflows.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: build + test (${{ matrix.cc }}, ASan/UBSan)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
+    env:
+      CC: ${{ matrix.cc }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/toolchain
+      - name: Compile examples
+        run: make examples
+      - name: Starters compile against tests
+        run: make starters
+      - name: Run tests with sanitizers
+        run: make test
+
+  lint:
+    name: lint (clang-format, clang-tidy, cppcheck, actionlint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/toolchain
+      - name: pre-commit
+        run: pre-commit run --all-files --show-diff-on-failure
+
+  commitlint:
+    name: commitlint (Conventional Commits)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Install commitlint
+        run: npm install --global --silent @commitlint/cli @commitlint/config-conventional
+      - name: Lint commit messages
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          export NODE_PATH="$(npm root -g)"
+          case "$EVENT" in
+            pull_request)
+              commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
+              echo "PR title: $PR_TITLE"
+              echo "$PR_TITLE" | commitlint --verbose ;;
+            push)
+              commitlint --last --verbose ;;
+            *)
+              git fetch --quiet origin main
+              commitlint --from origin/main --to HEAD --verbose ;;
+          esac
+
+  # Single required check for branch protection.
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [test, lint, commitlint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All jobs passed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "results: $RESULTS"
+          for r in $RESULTS; do [ "$r" = success ] || exit 1; done

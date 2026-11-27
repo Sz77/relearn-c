@@ -1,0 +1,49 @@
+# Install with ./setup.sh (runs `pre-commit install`). Run manually: make lint
+default_install_hook_types: [pre-commit, commit-msg]
+exclude: ^third_party/
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v23.1.5
+    hooks:
+      - id: clang-format
+        types_or: [c]
+
+  - repo: local
+    hooks:
+      - id: clang-tidy
+        name: clang-tidy
+        entry: scripts/lint.sh tidy
+        language: python
+        additional_dependencies: ["clang-tidy==23.1.4"]
+        types_or: [c]
+        require_serial: false
+      - id: cppcheck
+        name: cppcheck
+        entry: scripts/lint.sh cppcheck
+        language: system
+        types_or: [c]
+        exclude: ^topics/[^/]+/tests/
+      - id: actionlint
+        name: actionlint (GitHub workflows)
+        entry: actionlint
+        language: python
+        additional_dependencies: ["actionlint-py==1.7.12.25"]
+        files: ^\.github/workflows/.*\.ya?ml$
+
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: v9.27.0
+    hooks:
+      - id: commitlint
+        stages: [commit-msg]
+        additional_dependencies: ["@commitlint/config-conventional"]

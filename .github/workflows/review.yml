@@ -1,0 +1,99 @@
+name: Review
+
+# Runs the review agent on PRs that change topics/*/solutions/.
+# Sets the required `review-verdict` commit status (success = APPROVE, failure = REDO).
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: PR number to review
+        required: true
+
+concurrency:
+  group: review-${{ github.event.pull_request.number || inputs.pr }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      statuses: write
+      actions: write
+      id-token: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PR: ${{ github.event.pull_request.number || inputs.pr }}
+    steps:
+      - name: Inspect PR
+        id: pr
+        run: |
+          info="$(gh pr view "$PR" -R "$GITHUB_REPOSITORY" --json headRefName,headRefOid,files)"
+          head_ref="$(jq -r .headRefName <<<"$info")"
+          head_sha="$(jq -r .headRefOid <<<"$info")"
+          n="$(jq '[.files[].path | select(test("^topics/[^/]+/solutions/"))] | length' <<<"$info")"
+          { echo "head_ref=$head_ref"; echo "head_sha=$head_sha"; echo "solutions=$n"; } >> "$GITHUB_OUTPUT"
+
+      - name: No solutions in this PR → nothing to review
+        if: steps.pr.outputs.solutions == '0'
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/statuses/${{ steps.pr.outputs.head_sha }}" \
+            -f state=success -f context=review-verdict -f description="No solutions in this PR"
+
+      - name: Mark review pending
+        if: steps.pr.outputs.solutions != '0'
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/statuses/${{ steps.pr.outputs.head_sha }}" \
+            -f state=pending -f context=review-verdict -f description="Review agent running"
+
+      - uses: actions/checkout@v5
+        if: steps.pr.outputs.solutions != '0'
+        with:
+          ref: ${{ steps.pr.outputs.head_ref }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/toolchain
+        if: steps.pr.outputs.solutions != '0'
+
+      - name: Review agent
+        if: steps.pr.outputs.solutions != '0'
+        uses: anthropics/claude-code-action@v1
+        env:
+          VERDICT_FILE: ${{ runner.temp }}/verdict
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: --permission-mode bypassPermissions
+          prompt: |
+            You are running in GitHub Actions for ${{ github.repository }}.
+            Follow `.claude/commands/review-pr.md` steps 1–3 for PR #${{ env.PR }}
+            (the PR branch `${{ steps.pr.outputs.head_ref }}` is already checked out; skip `gh pr checkout`).
+            Use the `review` subagent defined in `.claude/agents/review.md`.
+            When the verdict is known, write exactly `APPROVE` or `REDO` to the file
+            ${{ runner.temp }}/verdict . Do not set commit statuses; the workflow does that.
+            Never write solution code.
+
+      - name: Publish verdict
+        if: always() && steps.pr.outputs.solutions != '0'
+        run: |
+          verdict="$(tr -d '[:space:]' < "$RUNNER_TEMP/verdict" 2>/dev/null || true)"
+          git fetch --quiet origin "${{ steps.pr.outputs.head_ref }}"
+          sha="$(git rev-parse "origin/${{ steps.pr.outputs.head_ref }}")"
+          case "$verdict" in
+            APPROVE) state=success; desc="Review: APPROVE" ;;
+            REDO)    state=failure; desc="Review: REDO (see PR comment)" ;;
+            *)       state=error;   desc="Review agent produced no verdict" ;;
+          esac
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$sha" -f state="$state" -f context=review-verdict -f description="$desc"
+          if [ "$sha" != "${{ steps.pr.outputs.head_sha }}" ]; then
+            # The agent pushed progress updates; GITHUB_TOKEN pushes don't trigger CI, so dispatch it.
+            gh workflow run ci.yml --ref "${{ steps.pr.outputs.head_ref }}"
+          fi
+          echo "Verdict: ${verdict:-none}"
+          [ "$state" != error ]
