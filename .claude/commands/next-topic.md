@@ -29,8 +29,8 @@ Generate the next topic of the C curriculum. This exact procedure is also run by
    "Start with: `git switch main && git pull && git switch -c solve/NN-name && make start T=NN`".
 8. **Gates.** Mark the PR as not needing a solution review, then queue the merge:
    - `gh api repos/{owner}/{repo}/statuses/$(git rev-parse HEAD) -f state=success -f context=review-verdict -f description="Topic PR: no solutions to review"`
-   - If running in GitHub Actions (`GITHUB_ACTIONS=true`), CI does not trigger itself for
-     bot-pushed commits, so dispatch it: `gh workflow run ci.yml --ref topic/NN-name`.
+   - If running in GitHub Actions (`GITHUB_ACTIONS=true`), bot-created PRs do not get a normal
+     CI run, so dispatch it: `gh workflow run ci.yml --ref topic/NN-name`. Its `ci-ok`
+     job publishes the `ci-ok` commit status that branch protection requires.
    - `gh pr merge --auto --squash` (merges once CI is green).
-9. **Report** the PR URL and the "start with" commands. If `$GITHUB_OUTPUT` is set, append
-   `pr_url=<url>` to it.
+9. **Report** the PR URL and the "start with" commands.

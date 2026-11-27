@@ -78,15 +78,31 @@ jobs:
           esac
 
   # Single required check for branch protection.
+  # Also published as a `ci-ok` commit status: GitHub does not attach check runs from
+  # workflow_dispatch runs (used for bot-created PRs) to the PR, but it does match
+  # commit statuses by SHA for branch protection.
   ci-ok:
     name: ci-ok
     if: always()
     needs: [test, lint, commitlint]
     runs-on: ubuntu-latest
+    permissions:
+      statuses: write
     steps:
       - name: All jobs passed
+        id: check
         env:
           RESULTS: ${{ join(needs.*.result, ' ') }}
         run: |
           echo "results: $RESULTS"
           for r in $RESULTS; do [ "$r" = success ] || exit 1; done
+      - name: Publish ci-ok commit status
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          STATE: ${{ steps.check.outcome == 'success' && 'success' || 'failure' }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state="$STATE" -f context=ci-ok \
+            -f description="CI: $STATE" -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
