@@ -10,7 +10,7 @@ Status: `⬜ todo` · `🟡 in progress` (folder created, exercises open) · `�
 
 | #  | Topic | Builds on | Folder | Status |
 |----|-------|-----------|--------|--------|
-| 1  | Hello world and the toolchain: preprocess → compile → assemble → link, gcc flags, warnings | — | | ⬜ todo |
+| 1  | Hello world and the toolchain: preprocess → compile → assemble → link, gcc flags, warnings | — | 01-toolchain | 🟡 in progress |
 | 2  | Multiple files: translation units, headers, declarations vs definitions, include guards, linking | 1 | | ⬜ todo |
 | 3  | Variables and types: integer types, sizes, `sizeof`, `<limits.h>`, `<stdint.h>`, `<stdbool.h>` | 1 | | ⬜ todo |
 | 4  | Operators and expressions: integer division, promotions, signed overflow UB, precedence | 3 | | ⬜ todo |
