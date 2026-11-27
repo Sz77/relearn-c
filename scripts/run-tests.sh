@@ -13,7 +13,10 @@
 #                         topics/NN/solutions (used to validate tests against a reference)
 #   --starters            use the starter files in exercises/ as the "solution"
 #   --compile-only        only compile, do not run tests
-#   --require-solutions   a missing solution is a failure instead of a skip
+#   --require-solutions   a missing or not-started solution is a failure instead of a skip
+#
+# A solution identical to its starter file counts as not started (SKIP), so a PR can
+# contain only some exercises of a topic.
 #
 # Environment: CC (default gcc), SAN=0 disables sanitizers, BUILD_DIR (default build).
 set -uo pipefail
@@ -81,11 +84,22 @@ for topic_dir in topics/*/; do
     prog_test="${topic_dir}tests/test_${ex}.sh"
     out_dir="$BUILD_DIR/$topic/$ex"
     mkdir -p "$out_dir"
+    # A solution whose .c files are all byte-identical to the starter is "not started".
+    why="no solution yet"
+    if [[ ${#srcs[@]} -gt 0 && "$mode" == solutions && -z "$solutions_root" ]]; then
+      unchanged=1
+      for f in "${srcs[@]}"; do
+        if [[ ! -f "$ex_dir/$(basename "$f")" ]] || ! cmp -s "$f" "$ex_dir/$(basename "$f")"; then
+          unchanged=0; break
+        fi
+      done
+      if [[ $unchanged -eq 1 ]]; then srcs=(); why="starter unchanged: not started"; fi
+    fi
     if [[ ${#srcs[@]} -eq 0 ]]; then
       if [[ $require -eq 1 ]]; then
-        printf '  %sFAIL%s %s (no solution in %s)\n' "$R" "$N" "$ex" "$sol_dir"; fail=$((fail + 1)); failed_list+=("$topic/$ex")
+        printf '  %sFAIL%s %s (%s)\n' "$R" "$N" "$ex" "$why"; fail=$((fail + 1)); failed_list+=("$topic/$ex")
       else
-        printf '  %sSKIP%s %s (no solution yet)\n' "$Y" "$N" "$ex"; skip=$((skip + 1))
+        printf '  %sSKIP%s %s (%s)\n' "$Y" "$N" "$ex" "$why"; skip=$((skip + 1))
       fi
       continue
     fi
