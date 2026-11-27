@@ -39,17 +39,34 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Is a topic still in progress?
+        id: gate
+        env:
+          FORCE: ${{ inputs.force }}
+        run: |
+          if [ "$FORCE" != "true" ] && grep -q '🟡 in progress' curriculum/ROADMAP.md; then
+            echo "A topic is still in progress (not every exercise approved yet). Nothing to generate."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: ./.github/actions/toolchain
+        if: steps.gate.outputs.skip != 'true'
 
       - name: Curriculum + exercise agents
+        if: steps.gate.outputs.skip != 'true'
         id: claude
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_args: --permission-mode bypassPermissions
+          display_report: true
           prompt: |
             You are running in GitHub Actions for ${{ github.repository }} (GITHUB_ACTIONS=true).
             Follow `.claude/commands/next-topic.md` exactly, with $ARGUMENTS = "${{ inputs.force && 'force' || '' }}".
-            Use the `curriculum` and `exercise` subagents defined in `.claude/agents/`.
+            Do NOT use the Agent/Task tool or any subagent (in this headless run a background
+            subagent is abandoned when the session ends). Read `.claude/agents/curriculum.md`
+            and then `.claude/agents/exercise.md` and carry out both yourself, in this session.
             Never write solution code.
