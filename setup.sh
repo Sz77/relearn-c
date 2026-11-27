@@ -11,12 +11,12 @@ SUDO=""
 
 say "Installing system packages (compilers, sanitizers, cppcheck, node, gh)"
 if have dnf; then
-  $SUDO dnf install -y gcc clang make cppcheck libasan libubsan git gh nodejs python3 gdb
+  $SUDO dnf install -y gcc clang make cppcheck libasan libubsan git gh nodejs python3 gdb ShellCheck
 elif have apt-get; then
   $SUDO apt-get update
-  $SUDO apt-get install -y gcc clang make cppcheck git gh nodejs npm python3 python3-venv pipx gdb
+  $SUDO apt-get install -y gcc clang make cppcheck git gh nodejs npm python3 python3-venv pipx gdb shellcheck
 elif have pacman; then
-  $SUDO pacman -S --needed --noconfirm gcc clang make cppcheck git github-cli nodejs npm python python-pipx gdb
+  $SUDO pacman -S --needed --noconfirm gcc clang make cppcheck git github-cli nodejs npm python python-pipx gdb shellcheck
 else
   echo "Unsupported package manager. Install manually: gcc clang make cppcheck git gh nodejs python3, then re-run." >&2
 fi

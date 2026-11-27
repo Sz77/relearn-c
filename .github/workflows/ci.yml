@@ -63,7 +63,8 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          export NODE_PATH="$(npm root -g)"
+          NODE_PATH="$(npm root -g)"
+          export NODE_PATH
           case "$EVENT" in
             pull_request)
               commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose

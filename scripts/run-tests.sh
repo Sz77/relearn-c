@@ -19,7 +19,7 @@
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT"
+cd "$ROOT" || exit 2
 
 CC="${CC:-gcc}"
 BUILD_DIR="${BUILD_DIR:-build}"
@@ -27,6 +27,7 @@ SAN="${SAN:-1}"
 STD_FLAGS=(-std=c17 -Wall -Wextra -Werror -pedantic -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes -g -O0)
 SAN_FLAGS=()
 if [[ "$SAN" == "1" ]]; then
+  # shellcheck disable=SC2054 # the comma is part of the gcc flag
   SAN_FLAGS=(-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
 fi
 export ASAN_OPTIONS="${ASAN_OPTIONS:-detect_leaks=1:abort_on_error=0:detect_stack_use_after_return=1}"

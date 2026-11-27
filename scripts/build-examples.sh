@@ -6,7 +6,7 @@
 # Usage: scripts/build-examples.sh [TOPIC_FILTER]
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT"
+cd "$ROOT" || exit 2
 CC="${CC:-gcc}"
 BUILD_DIR="${BUILD_DIR:-build}"
 FLAGS=(-std=c17 -Wall -Wextra -Werror -pedantic -Wshadow -Wconversion -Wstrict-prototypes -g -O0)

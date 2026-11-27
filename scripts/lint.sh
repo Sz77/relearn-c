@@ -4,7 +4,7 @@
 # Include paths are derived from each file's topic so exercise headers resolve.
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT"
+cd "$ROOT" || exit 2
 tool="$1"; shift
 status=0
 shopt -s nullglob

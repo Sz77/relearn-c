@@ -34,6 +34,12 @@ repos:
         language: system
         types_or: [c]
         exclude: ^topics/[^/]+/tests/
+      - id: shellcheck
+        name: shellcheck (shell scripts, program tests)
+        entry: shellcheck
+        language: python
+        additional_dependencies: ["shellcheck-py==0.11.0.1"]
+        types: [shell]
       - id: actionlint
         name: actionlint (GitHub workflows)
         entry: actionlint
