@@ -33,6 +33,9 @@ jobs:
     steps:
       - name: Inspect PR
         id: pr
+        env:
+          EVENT_ACTION: ${{ github.event.action }}
+          BEFORE: ${{ github.event.before }}
         run: |
           info="$(gh pr view "$PR" -R "$GITHUB_REPOSITORY" --json headRefName,headRefOid,files)"
           head_ref="$(jq -r .headRefName <<<"$info")"
@@ -40,29 +43,52 @@ jobs:
           n="$(jq '[.files[].path | select(test("^topics/[^/]+/solutions/"))] | length' <<<"$info")"
           { echo "head_ref=$head_ref"; echo "head_sha=$head_sha"; echo "solutions=$n"; } >> "$GITHUB_OUTPUT"
 
+          # A push that changes no solution files keeps the previous verdict (no new review).
+          reuse=""
+          if [ "$EVENT_ACTION" = synchronize ] && [ "$n" != 0 ] && [ -n "$BEFORE" ]; then
+            changed="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BEFORE...$head_sha" \
+              --jq '[.files[].filename | select(test("^topics/[^/]+/solutions/"))] | length' || echo 1)"
+            prev="$(gh api "repos/$GITHUB_REPOSITORY/commits/$BEFORE/status" \
+              --jq '[.statuses[] | select(.context=="review-verdict")][0] | "\(.state)|\(.description)"' || true)"
+            if [ "$changed" = 0 ] && { [ "${prev%%|*}" = success ] || [ "${prev%%|*}" = failure ]; }; then
+              reuse="$prev"
+            fi
+          fi
+          echo "reuse=$reuse" >> "$GITHUB_OUTPUT"
+
       - name: No solutions in this PR → nothing to review
         if: steps.pr.outputs.solutions == '0'
         run: |
           gh api "repos/$GITHUB_REPOSITORY/statuses/${{ steps.pr.outputs.head_sha }}" \
             -f state=success -f context=review-verdict -f description="No solutions in this PR"
 
+      - name: No solution changes since last review → keep previous verdict
+        if: steps.pr.outputs.reuse != ''
+        env:
+          REUSE: ${{ steps.pr.outputs.reuse }}
+        run: |
+          desc="${REUSE#*|}"
+          desc="${desc% (unchanged since)}"
+          gh api "repos/$GITHUB_REPOSITORY/statuses/${{ steps.pr.outputs.head_sha }}" \
+            -f state="${REUSE%%|*}" -f context=review-verdict -f description="$desc (unchanged since)"
+
       - name: Mark review pending
-        if: steps.pr.outputs.solutions != '0'
+        if: steps.pr.outputs.solutions != '0' && steps.pr.outputs.reuse == ''
         run: |
           gh api "repos/$GITHUB_REPOSITORY/statuses/${{ steps.pr.outputs.head_sha }}" \
             -f state=pending -f context=review-verdict -f description="Review agent running"
 
       - uses: actions/checkout@v5
-        if: steps.pr.outputs.solutions != '0'
+        if: steps.pr.outputs.solutions != '0' && steps.pr.outputs.reuse == ''
         with:
           ref: ${{ steps.pr.outputs.head_ref }}
           fetch-depth: 0
 
       - uses: ./.github/actions/toolchain
-        if: steps.pr.outputs.solutions != '0'
+        if: steps.pr.outputs.solutions != '0' && steps.pr.outputs.reuse == ''
 
       - name: Review agent
-        if: steps.pr.outputs.solutions != '0'
+        if: steps.pr.outputs.solutions != '0' && steps.pr.outputs.reuse == ''
         uses: anthropics/claude-code-action@v1
         env:
           VERDICT_FILE: ${{ runner.temp }}/verdict
@@ -83,7 +109,7 @@ jobs:
             Never write solution code.
 
       - name: Publish verdict
-        if: always() && steps.pr.outputs.solutions != '0'
+        if: always() && steps.pr.outputs.solutions != '0' && steps.pr.outputs.reuse == ''
         run: |
           verdict="$(tr -d '[:space:]' < "$RUNNER_TEMP/verdict" 2>/dev/null || true)"
           git fetch --quiet origin "${{ steps.pr.outputs.head_ref }}"
